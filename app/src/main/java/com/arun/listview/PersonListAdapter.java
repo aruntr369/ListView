@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
@@ -15,7 +17,14 @@ import java.util.ArrayList;
 public class PersonListAdapter extends ArrayAdapter<Person> {
     private static final String TAG = "PersonListAdapter";
     private Context mContext;
-    int mResource;
+    private int mResource;
+    private  int lastpostion=-1;
+
+    static class ViewHolder {
+        TextView name;
+        TextView birthday;
+        TextView sex;
+    }
 
     /**
      * Default constructor for the PersonListAdapter
@@ -41,15 +50,37 @@ public class PersonListAdapter extends ArrayAdapter<Person> {
     //create the person with the info
         Person person = new Person(name,birthday,sex);
 
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        convertView = inflater.inflate(mResource,parent,false);
-        TextView tvName =(TextView) convertView.findViewById(R.id.textview1);
-        TextView tvBirthday =(TextView) convertView.findViewById(R.id.textview2);
-        TextView tvSex =(TextView) convertView.findViewById(R.id.textview3);
+        //create the view result for showing the animation
+        final View result;
 
-        tvName.setText(name);
-        tvBirthday.setText(birthday);
-        tvSex.setText(sex);
+        //viewholder object
+        ViewHolder holder = new ViewHolder();
+
+        if(convertView==null) {
+            LayoutInflater inflater = LayoutInflater.from(mContext);
+            convertView = inflater.inflate(mResource, parent, false);
+            holder.name = (TextView) convertView.findViewById(R.id.textview1);
+            holder.birthday = (TextView) convertView.findViewById(R.id.textview2);
+            holder.sex = (TextView) convertView.findViewById(R.id.textview3);
+
+            result = convertView;
+
+            convertView.setTag(holder);
+        }
+        else {
+            holder=(ViewHolder) convertView.getTag();
+            result=convertView;
+        }
+
+        Animation animation= AnimationUtils.loadAnimation(mContext,
+                (position>lastpostion)? R.anim.slide_down: R.anim.slide_up);
+        result.startAnimation(animation);
+        lastpostion=position;
+
+        holder.name.setText(person.getName());
+        holder.birthday.setText(person.getBirthdate());
+        holder.sex.setText(person.getSex());
+
 
         return convertView;
     }
